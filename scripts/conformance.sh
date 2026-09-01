@@ -14,19 +14,13 @@ pair_out=${PROVENANCE_PAIR_OUT:?PROVENANCE_PAIR_OUT is required}
 mkdir -p "$work" "$(dirname "$counts_out")" "$(dirname "$pair_out")"
 projection="$work/projection"
 
-if ! "$binary" conformance \
-    --source "$root/.gooo/operational-provenance-projector.gooo" \
-    --contract "$root/contracts/denominator-v1.json" \
-    --fixture "$root/fixtures/canonical-v1.json" \
-    --history "$root/fixtures/v0.49-static-validation-history.json" \
-    --root "$root" \
-    --output "$projection" > "$work/command-output.json"; then
-  if [[ -f "$projection/report.json" ]]; then
-    echo "projector report from failed conformance:" >&2
-    cat "$projection/report.json" >&2
-  fi
-  exit 1
-fi
+"$binary" conformance \
+  --source "$root/.gooo/operational-provenance-projector.gooo" \
+  --contract "$root/contracts/denominator-v1.json" \
+  --fixture "$root/fixtures/canonical-v1.json" \
+  --history "$root/fixtures/v0.49-static-validation-history.json" \
+  --root "$root" \
+  --output "$projection" > "$work/command-output.json"
 
 jq -e '
   .schema == "gooo/operational-provenance-projector/report/v1" and

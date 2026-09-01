@@ -42,7 +42,7 @@
       "event_kind": "LOCAL_AUTHORING",
       "command_class": "AUTHORING_ONLY",
       "activity": "classify-command",
-      "observation": "bounded local activity is authoring-only and not validation",
+      "observation": "bounded local activity is authoring-only and not a verification run",
       "signed": false,
       "has_digest": true,
       "explicit": false,
@@ -203,4 +203,3 @@
     "next_operation": "collect-independent-user-workload-evidence"
   }
 }
-
