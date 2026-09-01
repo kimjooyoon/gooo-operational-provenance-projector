@@ -140,11 +140,11 @@ jobs:
             '{schema:$schema,tag:$tag,merge_sha:$merge_sha,release_id:($release_id|tonumber),release_run_id:$run_id,release_job_id:$job,source_asset:{name:"gooo-operational-provenance-projector-evidence.tar.gz",digest:$source_digest},main_ci:{run_id:$main_run_id,artifact:$artifact[0]},denominator:$report[0].metrics.denominator,exact_metrics:$report[0].metrics,summary:$report[0].summary,inventory:$report[0].inventory,authority:$report[0].authority,operational_audit:$report[0].operational_audit,receipt_chain:$report[0].receipt_chain,replay:$report[0].replay}' > "$RUNNER_TEMP/release-audit.json"
       - name: Upload assets to the draft release
         run: gh release upload "v${{ inputs.version }}" "$RUNNER_TEMP/gooo-operational-provenance-projector-evidence.tar.gz" "$RUNNER_TEMP/release-audit.json"
-      - name: Enable and verify immutable release policy
+      - name: Verify immutable release policy precondition
         shell: bash
         run: |
           set -euo pipefail
-          settings=$(gh api -X PUT "repos/$GITHUB_REPOSITORY/immutable-releases")
+          settings=$(gh api "repos/$GITHUB_REPOSITORY/immutable-releases")
           jq -e '.enabled == true' <<<"$settings" >/dev/null
       - name: Publish draft exactly once
         run: gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/${{ steps.draft.outputs.release_id }}" -F draft=false
