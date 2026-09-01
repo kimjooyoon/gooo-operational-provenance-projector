@@ -9,9 +9,10 @@ The release sequence is one-way:
 3. refuse an existing release for that tag;
 4. create a draft release through the GitHub API and keep its returned release ID;
 5. upload the evidence bundle and release audit assets;
-6. enable and verify the platform immutable-release policy;
+6. verify that the repository owner has enabled the platform immutable-release policy;
 7. publish the draft once;
 8. verify `immutable=true`, the annotated tag object and peeled commit, exact asset count, and every asset's `sha256:` digest.
 
 No cleanup path deletes or overwrites failed evidence. If a step fails, the resulting run, tag, draft, release, or asset remains available for audit.
 
+The one-time repository setting is enabled by the repository owner before dispatch because the GitHub Actions `github.token` is intentionally restricted to the standard workflow permissions. The release workflow only reads and verifies that precondition, then verifies the published release's actual `immutable=true` field.
