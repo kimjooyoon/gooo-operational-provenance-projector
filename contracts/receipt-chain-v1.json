@@ -1,0 +1,10 @@
+{
+  "schema": "gooo/operational-provenance-projector/receipt-chain/v1",
+  "append_only": true,
+  "hash_algorithm": "sha256",
+  "event_digest": "sha256:canonical-event-without-event-digest",
+  "receipt_digest": "sha256:canonical-receipt-without-receipt-digest",
+  "previous_receipt_digest": "required-after-first-event",
+  "replay": "same-inputs-produce-identical-events-receipts-and-reports"
+}
+

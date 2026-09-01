@@ -1,0 +1,76 @@
+program operational-provenance-projector
+namespace gooo.operational.provenance
+schema gooo/operational-provenance-projector/meta/v1
+precedence REFUTED > UNKNOWN > CLOSED
+authority_layer CI_RUNTIME
+authority_layer OPERATOR_AUTHORING
+authority_layer ORCHESTRATOR_LOCAL
+event_kind CI_EXECUTION
+event_kind OPERATOR_EVENT
+event_kind LOCAL_AUTHORING
+event_kind LOCAL_VALIDATION
+event_kind EMPTY_AUTHORITATIVE_SET
+command_class CI_VALIDATION
+command_class OPERATOR_AUTHORING
+command_class AUTHORING_ONLY
+command_class VALIDATION
+command_class UNKNOWN
+attempt_state ATTEMPTS
+attempt_state SUCCESS
+attempt_state FAILURE
+attempt_state UNKNOWN
+receipt_chain append_only
+receipt_chain previous_digest_required
+receipt_chain event_digest_required
+receipt_chain deterministic_replay
+unknown_field stage
+unknown_field step
+unknown_field reason
+unknown_field unknown_class
+unknown_field next_operation
+unknown_field blocked_by
+indicator attempts exact-integer-vector
+indicator success exact-integer-vector
+indicator failure exact-integer-vector
+indicator unknown exact-integer-vector
+indicator repository_writes exact-integer-vector
+indicator local_test_executions exact-integer-vector
+indicator cross_project_required_gates exact-integer-vector
+metric_policy missing-is-null
+metric_policy exact-zero-requires-authoritative-empty-receipt
+metric_policy no-score-percentage-average
+improvement_policy exact-same-scenario-input-contract-fixture-toolchain-runner-job
+improvement_policy otherwise-UNKNOWN
+operational_history v0.49-optional-immutable-fixture
+operational_history existing-refuted-preserved
+activity project-semantic-graph
+activity classify-authority-layer
+activity classify-command
+activity append-event
+activity chain-receipt
+activity evaluate-state
+activity preserve-contradiction
+activity project-layer-receipt
+activity project-human-report
+activity replay-deterministically
+activity record-runtime-boundary
+activity record-operator-unknown
+case closed-ci-signed-digested CLOSED closed-ci-signed-digested
+case closed-operator-explicit CLOSED closed-operator-explicit
+case closed-authoring-only-local CLOSED closed-authoring-only-local
+case closed-exact-zero-empty-receipt CLOSED closed-exact-zero-empty-receipt
+case unknown-missing-receipt UNKNOWN unknown-missing-receipt
+case unknown-stale-receipt UNKNOWN unknown-stale-receipt
+case unknown-ambiguous-layer UNKNOWN unknown-ambiguous-layer
+case unknown-unbounded-observation UNKNOWN unknown-unbounded-observation
+case refuted-contradictory-counts REFUTED refuted-contradictory-counts
+case refuted-validation-disguised-as-authoring REFUTED refuted-validation-disguised-as-authoring
+case refuted-forged-authority REFUTED refuted-forged-authority
+case refuted-write-escalation REFUTED refuted-write-escalation
+forbid_effect source_repository_write
+forbid_effect commit
+forbid_effect merge
+forbid_effect tag
+forbid_effect release
+forbid_effect local_validation
+forbid_effect cross_project_gate
