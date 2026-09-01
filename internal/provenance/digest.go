@@ -35,4 +35,3 @@ func canonicalJSON(value any) ([]byte, error) {
 	}
 	return append(data, '\n'), nil
 }
-

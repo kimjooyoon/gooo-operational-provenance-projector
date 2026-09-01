@@ -16,45 +16,45 @@ func evaluateCase(input FixtureCase, expected ContractCase, sequence int, previo
 		refutations = append(refutations, RefutationRecord{
 			Stage: "AUTHORITY", Step: "classify-source-repository-effects",
 			Reason: "WRITE_ESCALATION", RefutationClass: "WRITE_ESCALATION",
-			Evidence: fmt.Sprintf("repository_writes=%d", input.RepositoryWrites),
+			Evidence:      fmt.Sprintf("repository_writes=%d", input.RepositoryWrites),
 			NextOperation: "retain-refuted-event-and-remove-escalated-effect",
-			BlockedBy: []string{"source_repository_write"},
+			BlockedBy:     []string{"source_repository_write"},
 		})
 	}
 	if isCountContradiction(input.Counts) {
 		refutations = append(refutations, RefutationRecord{
 			Stage: "METRICS", Step: "reconcile-attempt-counts",
 			Reason: "CONTRADICTORY_COUNTS", RefutationClass: "COUNT_CONTRADICTION",
-			Evidence: fmt.Sprintf("attempts=%d success=%d failure=%d unknown=%d", countValue(input.Counts.Attempts), countValue(input.Counts.Success), countValue(input.Counts.Failure), countValue(input.Counts.Unknown)),
+			Evidence:      fmt.Sprintf("attempts=%d success=%d failure=%d unknown=%d", countValue(input.Counts.Attempts), countValue(input.Counts.Success), countValue(input.Counts.Failure), countValue(input.Counts.Unknown)),
 			NextOperation: "reconcile-counts-from-authoritative-receipt",
-			BlockedBy: []string{"attempts", "success", "failure", "unknown"},
+			BlockedBy:     []string{"attempts", "success", "failure", "unknown"},
 		})
 	}
 	if input.EventKind == "LOCAL_VALIDATION" || input.CommandClass == "VALIDATION" || (input.CommandClass == "AUTHORING_ONLY" && strings.Contains(strings.ToLower(input.Observation), "validation")) {
 		refutations = append(refutations, RefutationRecord{
 			Stage: "COMMAND_CLASSIFICATION", Step: "distinguish-validation-from-authoring",
 			Reason: "VALIDATION_DISGUISED_AS_AUTHORING", RefutationClass: "VALIDATION_DISGUISED_AS_AUTHORING",
-			Evidence: fmt.Sprintf("event_kind=%s command_class=%s", input.EventKind, input.CommandClass),
+			Evidence:      fmt.Sprintf("event_kind=%s command_class=%s", input.EventKind, input.CommandClass),
 			NextOperation: "reclassify-event-as-validation",
-			BlockedBy: []string{"event_kind", "command_class"},
+			BlockedBy:     []string{"event_kind", "command_class"},
 		})
 	}
 	if input.Layer == "CI_RUNTIME" && input.Signed && input.AuthorityProof != "GITHUB_ACTIONS" {
 		refutations = append(refutations, RefutationRecord{
 			Stage: "AUTHORITY", Step: "verify-ci-signature-authority",
 			Reason: "FORGED_AUTHORITY", RefutationClass: "FORGED_AUTHORITY",
-			Evidence: fmt.Sprintf("authority_proof=%s", input.AuthorityProof),
+			Evidence:      fmt.Sprintf("authority_proof=%s", input.AuthorityProof),
 			NextOperation: "obtain-trusted-github-actions-receipt",
-			BlockedBy: []string{"ci_signature_authority"},
+			BlockedBy:     []string{"ci_signature_authority"},
 		})
 	}
 	if input.Layer == "OPERATOR_AUTHORING" && input.Explicit && input.AuthorityProof != "OPERATOR_EXPLICIT" {
 		refutations = append(refutations, RefutationRecord{
 			Stage: "AUTHORITY", Step: "verify-explicit-operator-event",
 			Reason: "FORGED_AUTHORITY", RefutationClass: "FORGED_AUTHORITY",
-			Evidence: fmt.Sprintf("authority_proof=%s", input.AuthorityProof),
+			Evidence:      fmt.Sprintf("authority_proof=%s", input.AuthorityProof),
 			NextOperation: "obtain-explicit-operator-receipt",
-			BlockedBy: []string{"operator_event_authority"},
+			BlockedBy:     []string{"operator_event_authority"},
 		})
 	}
 
@@ -156,8 +156,12 @@ func digestValue(value any) string {
 }
 
 func isCountContradiction(value CountVector) bool {
-	if !isComplete(value) { return false }
-	if countValue(value.Attempts) < 0 || countValue(value.Success) < 0 || countValue(value.Failure) < 0 || countValue(value.Unknown) < 0 { return true }
+	if !isComplete(value) {
+		return false
+	}
+	if countValue(value.Attempts) < 0 || countValue(value.Success) < 0 || countValue(value.Failure) < 0 || countValue(value.Unknown) < 0 {
+		return true
+	}
 	return countValue(value.Attempts) != countValue(value.Success)+countValue(value.Failure)+countValue(value.Unknown)
 }
 
@@ -169,9 +173,12 @@ func summarize(cases []CaseReport) StateCounts {
 	counts := StateCounts{}
 	for _, item := range cases {
 		switch item.Decision {
-		case DecisionClosed: counts.Closed++
-		case DecisionUnknown: counts.Unknown++
-		case DecisionRefuted: counts.Refuted++
+		case DecisionClosed:
+			counts.Closed++
+		case DecisionUnknown:
+			counts.Unknown++
+		case DecisionRefuted:
+			counts.Refuted++
 		}
 	}
 	return counts
@@ -179,15 +186,22 @@ func summarize(cases []CaseReport) StateCounts {
 
 func chainReport(receipts []LayerReceipt) ChainReport {
 	report := ChainReport{Schema: "gooo/operational-provenance-projector/receipt-chain/v1", AppendOnly: true, Length: len(receipts), Valid: true}
-	if len(receipts) == 0 { report.Valid = false; return report }
+	if len(receipts) == 0 {
+		report.Valid = false
+		return report
+	}
 	report.HeadDigest = receipts[0].ReceiptDigest
 	report.TailDigest = receipts[len(receipts)-1].ReceiptDigest
 	previous := ""
 	for _, receipt := range receipts {
-		if receipt.PreviousReceiptDigest != previous || receipt.EventDigest == "" || receipt.ReceiptDigest == "" { report.Valid = false }
+		if receipt.PreviousReceiptDigest != previous || receipt.EventDigest == "" || receipt.ReceiptDigest == "" {
+			report.Valid = false
+		}
 		unsigned := receipt
 		unsigned.ReceiptDigest = ""
-		if digestValue(unsigned) != receipt.ReceiptDigest { report.Valid = false }
+		if digestValue(unsigned) != receipt.ReceiptDigest {
+			report.Valid = false
+		}
 		previous = receipt.ReceiptDigest
 	}
 	return report
@@ -195,8 +209,9 @@ func chainReport(receipts []LayerReceipt) ChainReport {
 
 func sortedKeys(values map[string][]byte) []string {
 	keys := make([]string, 0, len(values))
-	for key := range values { keys = append(keys, key) }
+	for key := range values {
+		keys = append(keys, key)
+	}
 	sort.Strings(keys)
 	return keys
 }
-

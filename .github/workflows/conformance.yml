@@ -23,24 +23,6 @@ jobs:
         with:
           go-version: 1.27.0
           cache: false
-      - name: Export CI-formatted Go sources for remediation
-        shell: bash
-        run: |
-          set -euo pipefail
-          formatted="$RUNNER_TEMP/formatted-go-sources"
-          mkdir -p "$formatted"
-          while IFS= read -r file; do
-            mkdir -p "$formatted/$(dirname "$file")"
-            cp "$file" "$formatted/$file"
-            gofmt -w "$formatted/$file"
-          done < <(git ls-files '*.go')
-      - name: Upload CI-formatted Go sources
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: formatted-go-sources-${{ github.sha }}
-          path: ${{ runner.temp }}/formatted-go-sources
-          if-no-files-found: error
       - name: Verify Go toolchain
         run: test "$(go env GOVERSION)" = "go1.27.0"
       - name: Verify formatting

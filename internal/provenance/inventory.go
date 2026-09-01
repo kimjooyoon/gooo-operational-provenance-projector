@@ -8,17 +8,29 @@ import (
 
 func inventory(root, output string) (InventoryReport, error) {
 	rootAbs, err := filepath.Abs(root)
-	if err != nil { return InventoryReport{}, err }
+	if err != nil {
+		return InventoryReport{}, err
+	}
 	outputAbs, err := filepath.Abs(output)
-	if err != nil { return InventoryReport{}, err }
+	if err != nil {
+		return InventoryReport{}, err
+	}
 	report := InventoryReport{RootReadmeExcluded: true, GitExcluded: true, OutputExcluded: true}
 	err = filepath.WalkDir(rootAbs, func(path string, entry fs.DirEntry, walkErr error) error {
-		if walkErr != nil { return walkErr }
-		if path == rootAbs { return nil }
+		if walkErr != nil {
+			return walkErr
+		}
+		if path == rootAbs {
+			return nil
+		}
 		rel, err := filepath.Rel(rootAbs, path)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		if entry.IsDir() {
-			if rel == ".git" || rel == "vendor" || rel == ".cache" || isWithin(path, outputAbs) { return fs.SkipDir }
+			if rel == ".git" || rel == "vendor" || rel == ".cache" || isWithin(path, outputAbs) {
+				return fs.SkipDir
+			}
 			report.DescendantDirs++
 			return nil
 		}
@@ -27,8 +39,10 @@ func inventory(root, output string) (InventoryReport, error) {
 		}
 		report.RegularFiles++
 		switch filepath.Ext(path) {
-		case ".go": report.GoFiles++
-		case ".gooo": report.GoooFiles++
+		case ".go":
+			report.GoFiles++
+		case ".gooo":
+			report.GoooFiles++
 		}
 		return nil
 	})
@@ -39,4 +53,3 @@ func isWithin(path, parent string) bool {
 	rel, err := filepath.Rel(parent, path)
 	return err == nil && rel != "." && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
-
