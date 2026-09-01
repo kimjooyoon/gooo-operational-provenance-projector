@@ -15,4 +15,4 @@ The release sequence is one-way:
 
 No cleanup path deletes or overwrites failed evidence. If a step fails, the resulting run, tag, draft, release, or asset remains available for audit.
 
-The one-time repository setting is enabled by the repository owner before dispatch because the GitHub Actions `github.token` is intentionally restricted to the standard workflow permissions. The release workflow only reads and verifies that precondition, then verifies the published release's actual `immutable=true` field.
+The one-time repository setting is enabled by the repository owner before dispatch because the GitHub Actions `github.token` is intentionally restricted to the standard workflow permissions. The workflow does not call the owner-only settings endpoint; it verifies the published release's actual `immutable=true` field, which is the release-level evidence boundary.
