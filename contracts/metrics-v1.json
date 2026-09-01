@@ -1,0 +1,11 @@
+{
+  "schema": "gooo/operational-provenance-projector/metrics/v1",
+  "vector": ["attempts", "success", "failure", "unknown", "repository_writes", "local_test_executions", "cross_project_required_gates"],
+  "integer_only": true,
+  "missing": null,
+  "exact_zero": "authoritative-empty-receipt-only",
+  "improvement_identity": ["scenario", "input", "contract", "fixture", "toolchain", "runner", "job"],
+  "improvement_without_exact_identity": "UNKNOWN",
+  "forbidden_aggregates": ["score", "percentage", "average", "inferred"]
+}
+

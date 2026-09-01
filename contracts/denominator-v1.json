@@ -1,0 +1,23 @@
+{
+  "schema": "gooo/operational-provenance-projector/denominator/v1",
+  "id": "operational-provenance-exact-12-v1",
+  "version": "1",
+  "fixed": true,
+  "precedence": ["REFUTED", "UNKNOWN", "CLOSED"],
+  "required_unknown_fields": ["stage", "step", "reason", "unknown_class", "next_operation", "blocked_by"],
+  "cases": [
+    {"id": "closed-ci-signed-digested", "expected": "CLOSED", "kind": "closed-ci-signed-digested"},
+    {"id": "closed-operator-explicit", "expected": "CLOSED", "kind": "closed-operator-explicit"},
+    {"id": "closed-authoring-only-local", "expected": "CLOSED", "kind": "closed-authoring-only-local"},
+    {"id": "closed-exact-zero-empty-receipt", "expected": "CLOSED", "kind": "closed-exact-zero-empty-receipt"},
+    {"id": "unknown-missing-receipt", "expected": "UNKNOWN", "kind": "unknown-missing-receipt"},
+    {"id": "unknown-stale-receipt", "expected": "UNKNOWN", "kind": "unknown-stale-receipt"},
+    {"id": "unknown-ambiguous-layer", "expected": "UNKNOWN", "kind": "unknown-ambiguous-layer"},
+    {"id": "unknown-unbounded-observation", "expected": "UNKNOWN", "kind": "unknown-unbounded-observation"},
+    {"id": "refuted-contradictory-counts", "expected": "REFUTED", "kind": "refuted-contradictory-counts"},
+    {"id": "refuted-validation-disguised-as-authoring", "expected": "REFUTED", "kind": "refuted-validation-disguised-as-authoring"},
+    {"id": "refuted-forged-authority", "expected": "REFUTED", "kind": "refuted-forged-authority"},
+    {"id": "refuted-write-escalation", "expected": "REFUTED", "kind": "refuted-write-escalation"}
+  ]
+}
+

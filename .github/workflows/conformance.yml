@@ -1,0 +1,73 @@
+name: Operational provenance projector conformance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    env:
+      SUBJECT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SUBJECT_SHA }}
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version: 1.27.0
+          cache: false
+      - name: Verify Go toolchain
+        run: test "$(go env GOVERSION)" = "go1.27.0"
+      - name: Verify formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=$(gofmt -l $(git ls-files '*.go'))
+          test -z "$files"
+      - name: Verify vet
+        run: go vet ./...
+      - name: Compile provenance package
+        run: scripts/measure-stage.sh compile "$RUNNER_TEMP/stage-metrics/compile.json" go build -buildmode=archive -trimpath -o "$RUNNER_TEMP/gooo-operational-provenance-projector.a" ./internal/provenance
+      - name: Build projector binary
+        run: scripts/measure-stage.sh build "$RUNNER_TEMP/stage-metrics/build.json" go build -trimpath -o "$RUNNER_TEMP/gooo-operational-provenance-projector" ./cmd/gooo-operational-provenance-projector
+      - name: Run Go tests and record events
+        shell: bash
+        run: scripts/measure-stage.sh test "$RUNNER_TEMP/stage-metrics/test.json" bash -c 'set -o pipefail; go test -json ./... | tee "$RUNNER_TEMP/go-test-events.jsonl"'
+      - name: Run fixed denominator and provenance projection
+        shell: bash
+        run: scripts/measure-stage.sh conformance "$RUNNER_TEMP/stage-metrics/conformance.json" scripts/conformance.sh "$RUNNER_TEMP/gooo-operational-provenance-projector"
+        env:
+          CONFORMANCE_WORK_ROOT: ${{ runner.temp }}/conformance-work
+          CONFORMANCE_COUNTS_OUT: ${{ runner.temp }}/conformance-counts.json
+          PROVENANCE_PAIR_OUT: ${{ runner.temp }}/provenance-pair.json
+      - name: Run caller-owned integration
+        shell: bash
+        run: scripts/measure-stage.sh integration "$RUNNER_TEMP/stage-metrics/integration.json" scripts/integration.sh "$RUNNER_TEMP/gooo-operational-provenance-projector"
+        env:
+          INTEGRATION_OUTPUT_ROOT: ${{ runner.temp }}/integration-output
+      - name: Assemble machine evidence
+        run: scripts/assemble-ci-evidence.sh "$RUNNER_TEMP/stage-metrics" "$RUNNER_TEMP/go-test-events.jsonl" "$RUNNER_TEMP/conformance-counts.json" "$RUNNER_TEMP/integration-output/integration.json" "$RUNNER_TEMP/provenance-pair.json"
+        env:
+          CI_EVIDENCE_OUT: ${{ runner.temp }}/ci-evidence.json
+          CONFORMANCE_WORK_ROOT: ${{ runner.temp }}/conformance-work
+      - name: Verify source checkout remained unchanged
+        run: test -z "$(git status --porcelain=v1)"
+      - name: Upload machine evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gooo-operational-provenance-projector-ci-evidence-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/ci-evidence.json
+            ${{ runner.temp }}/conformance-work/projection/events.ndjson
+            ${{ runner.temp }}/conformance-work/projection/report.json
+            ${{ runner.temp }}/conformance-work/projection/contradiction-report.json
+            ${{ runner.temp }}/conformance-work/projection/human-report.md
+          if-no-files-found: error
+

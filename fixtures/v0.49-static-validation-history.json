@@ -1,0 +1,18 @@
+{
+  "schema": "gooo/operational-provenance-projector/operational-history/v0.49",
+  "immutable": true,
+  "source": "v0.49-observation",
+  "state": "OPERATIONAL_REFUTED",
+  "exact_count": 5,
+  "commands": [
+    "go test ./...",
+    "go build ./...",
+    "go vet ./...",
+    "gofmt -l $(git ls-files '*.go')",
+    "bash -n scripts/*.sh"
+  ],
+  "reason": "historical local validation evidence is preserved as operationally refuted",
+  "preserve_existing_refuted": true,
+  "executed_by_current_runtime": false
+}
+
